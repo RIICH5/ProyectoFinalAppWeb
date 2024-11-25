@@ -1,15 +1,13 @@
-import React from "react";
-
-export const Item = ({ name, price, description }) => {
+export const Item = ({ name, description, price, category, status }) => {
   return (
-    <div className="flex justify-between items-center border-b border-gray-200 py-4">
-      <div>
-        <h3 className="text-lg font-bold">{name}</h3>
-        <p className="text-gray-600">{description}</p>
-      </div>
-      <div>
-        <span className="text-gray-600">${price}</span>
-      </div>
+    <div className="border p-4 mb-4">
+      <h2 className="text-xl font-bold">{name}</h2>
+      <p>{description}</p>
+      <p className="text-gray-600">Precio: ${price}</p>
+      <p className={`text-sm ${status === "available" ? "text-green-600" : "text-red-600"}`}>
+        {status === "available" ? "Disponible" : "Agotado"}
+      </p>
+      <p className="text-gray-500">Categoría: {category}</p>
     </div>
   );
 };

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Importa el hook useNavigate
 import { logoutUser } from "../services/auth";
 
 export const Header = ({
@@ -7,8 +8,12 @@ export const Header = ({
   isAuthenticated,
   setIsAuthenticated,
 }) => {
+  const navigate = useNavigate(); // Inicializa el hook para navegar
+
   const handleUser = () => {
     setIsAdmin(!isAdmin);
+    // Redirige al panel de Admin o al menú de usuario según el estado
+    navigate(isAdmin ? "/" : "/admin");
   };
 
   return (
@@ -33,6 +38,7 @@ export const Header = ({
                   onClick={async () => {
                     await logoutUser();
                     setIsAuthenticated(false);
+                    navigate("/"); // Redirige al inicio al cerrar sesión
                   }}
                   className="bg-white text-gray-800 px-2 py-1 rounded"
                 >
