@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+// Ubicación: services/menuService.js
+>>>>>>> ff61ab0ae3cb57b8e1b3a5831a57e48cb3e2348a
 import { db } from "./firebaseConfig";
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "firebase/firestore";
 
@@ -52,4 +56,8 @@ export const updateMenuItem = async (item) => {
     console.error("Error updating menu item:", error);
     throw new Error("Error al actualizar el elemento del menú.");
   }
+<<<<<<< HEAD
 };
+=======
+};
+>>>>>>> ff61ab0ae3cb57b8e1b3a5831a57e48cb3e2348a

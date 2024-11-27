@@ -12,6 +12,7 @@ export const LoginForm = ({ isAuthenticated, setIsAuthenticated }) => {
 
     if (user) {
         setIsAuthenticated(true);
+        setIsAdmin(user.role === "admin"); //verificar el rol
     }
 
     if (error) {

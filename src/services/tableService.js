@@ -1,3 +1,7 @@
+<<<<<<< HEAD
+=======
+// Ubicación: services/tableService.js
+>>>>>>> ff61ab0ae3cb57b8e1b3a5831a57e48cb3e2348a
 import { db } from "./firebaseConfig";
 import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
 

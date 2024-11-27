@@ -215,4 +215,8 @@ export const ManageMenu = () => {
   );
 };
 
+<<<<<<< HEAD
 export default ManageMenu;
+=======
+export default ManageMenu;
+>>>>>>> ff61ab0ae3cb57b8e1b3a5831a57e48cb3e2348a

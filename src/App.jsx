@@ -10,13 +10,19 @@ import MenuView from './components/Menu/MenuView';
 import { OrderProvider } from "./contexts/OrderContext"; // Contexto para pedidos
 import OrderCart from "./components/OrderCart"; // Componente del carrito
 import OrderHistory from "./components/OrderHistory"; // Componente del historial
+<<<<<<< HEAD
 app.use("/api/payment", paymentRoutes);
+=======
+>>>>>>> ff61ab0ae3cb57b8e1b3a5831a57e48cb3e2348a
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
+<<<<<<< HEAD
   const paymentRoutes = require("./routes/payment");
+=======
+>>>>>>> ff61ab0ae3cb57b8e1b3a5831a57e48cb3e2348a
 
   useEffect(() => {
     const checkAuth = () => {

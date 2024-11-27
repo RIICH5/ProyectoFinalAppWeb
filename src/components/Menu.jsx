@@ -173,4 +173,8 @@ async function fetchMenuFromFirebase() {
   return snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
 }
 
+<<<<<<< HEAD
 export default Menu;
+=======
+export default Menu;
+>>>>>>> ff61ab0ae3cb57b8e1b3a5831a57e48cb3e2348a
