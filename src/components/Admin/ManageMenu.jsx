@@ -1,3 +1,4 @@
+
 import React, { useContext, useState, useEffect } from "react";
 import { MenuContext } from "../../contexts/MenuContext";
 import { db } from "../../services/firebaseConfig";
@@ -7,6 +8,7 @@ export const ManageMenu = () => {
   const { items, setItems } = useContext(MenuContext); // Usamos el contexto
   const [newItem, setNewItem] = useState({ name: "", description: "", price: 0, category: "", image: null });
   const [editItem, setEditItem] = useState(null); // Para la edición de los productos
+  const [filterCategory, setFilterCategory] = useState("Todas"); // Filtro de categorías
 
   // Cargar los elementos del menú al inicio desde Firebase
   useEffect(() => {
@@ -25,6 +27,10 @@ export const ManageMenu = () => {
 
   // Agregar un producto al menú y a Firebase
   const handleAddItem = async () => {
+    if (!newItem.category) {
+      alert("Por favor, selecciona una categoría.");
+      return;
+    }
     try {
       const docRef = await addDoc(collection(db, "menu"), newItem);
       setItems([...items, { ...newItem, id: docRef.id }]); // Agrega el nuevo producto al estado
@@ -36,6 +42,10 @@ export const ManageMenu = () => {
 
   // Editar un producto en Firebase y en el estado
   const handleEditItem = async () => {
+    if (!editItem.category) {
+      alert("Por favor, selecciona una categoría.");
+      return;
+    }
     try {
       const itemDoc = doc(db, "menu", editItem.id);
       await updateDoc(itemDoc, editItem); // Actualiza el producto en Firebase
@@ -57,9 +67,30 @@ export const ManageMenu = () => {
     }
   };
 
+  // Filtrar productos por categoría
+  const filteredItems =
+    filterCategory === "Todas"
+      ? items
+      : items.filter((item) => item.category === filterCategory);
+
   return (
     <div className="manage-menu">
       <h2 className="text-xl font-bold mb-4">Gestión de Menú</h2>
+
+      {/* Filtro de Categorías */}
+      <div className="mb-4">
+        <select
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+          className="border p-2 mb-4"
+        >
+          <option value="Todas">Todas</option>
+          <option value="Entradas">Entradas</option>
+          <option value="Platos Fuertes">Platos Fuertes</option>
+          <option value="Postres">Postres</option>
+          <option value="Bebidas">Bebidas</option>
+        </select>
+      </div>
 
       {/* Formulario de Agregar Producto */}
       <div className="mb-4">
@@ -84,13 +115,17 @@ export const ManageMenu = () => {
           onChange={(e) => setNewItem({ ...newItem, price: parseFloat(e.target.value) })}
           className="border p-2 mr-2"
         />
-        <input
-          type="text"
-          placeholder="Categoría"
+        <select
           value={newItem.category}
           onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
           className="border p-2 mr-2"
-        />
+        >
+          <option value="">Seleccionar Categoría</option>
+          <option value="Entradas">Entradas</option>
+          <option value="Platos Fuertes">Platos Fuertes</option>
+          <option value="Postres">Postres</option>
+          <option value="Bebidas">Bebidas</option>
+        </select>
         <button onClick={handleAddItem} className="bg-blue-500 text-white p-2 rounded">
           Agregar Producto
         </button>
@@ -118,12 +153,17 @@ export const ManageMenu = () => {
             onChange={(e) => setEditItem({ ...editItem, price: parseFloat(e.target.value) })}
             className="border p-2 mr-2"
           />
-          <input
-            type="text"
+          <select
             value={editItem.category}
             onChange={(e) => setEditItem({ ...editItem, category: e.target.value })}
             className="border p-2 mr-2"
-          />
+          >
+            <option value="">Seleccionar Categoría</option>
+            <option value="Entradas">Entradas</option>
+            <option value="Platos Fuertes">Platos Fuertes</option>
+            <option value="Postres">Postres</option>
+            <option value="Bebidas">Bebidas</option>
+          </select>
           <button onClick={handleEditItem} className="bg-green-500 text-white p-2 rounded">
             Guardar Cambios
           </button>
@@ -132,8 +172,8 @@ export const ManageMenu = () => {
 
       {/* Listado de Productos */}
       <div>
-        {items && items.length > 0 ? (
-          items.map((item) => (
+        {filteredItems && filteredItems.length > 0 ? (
+          filteredItems.map((item) => (
             <div key={item.id} className="flex justify-between items-center border-b py-2">
               <span>{item.name} - {item.category}</span>
               <button onClick={() => setEditItem(item)} className="bg-yellow-500 text-white p-1 rounded">
@@ -145,7 +185,7 @@ export const ManageMenu = () => {
             </div>
           ))
         ) : (
-          <p>No hay productos en el menú.</p>
+          <p>No hay productos en esta categoría.</p>
         )}
       </div>
     </div>
