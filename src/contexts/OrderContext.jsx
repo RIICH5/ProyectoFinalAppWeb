@@ -3,8 +3,8 @@ import React, { createContext, useState } from "react";
 export const OrderContext = createContext();
 
 export const OrderProvider = ({ children }) => {
-  const [cart, setCart] = useState([]);
-  const [total, setTotal] = useState(0);
+  const [cart, setCart] = useState([]); // Estado del carrito
+  const [total, setTotal] = useState(0); // Total del carrito
 
   // Agregar producto al carrito
   const addToCart = (product) => {
@@ -26,13 +26,26 @@ export const OrderProvider = ({ children }) => {
     setCart((prevCart) => prevCart.filter((item) => item.id !== id));
   };
 
-  // Actualizar el total
+  // Vaciar el carrito
+  const clearCart = () => {
+    setCart([]);
+  };
+
+  // Actualizar el total del carrito en tiempo real
   React.useEffect(() => {
     setTotal(cart.reduce((sum, item) => sum + item.price * item.quantity, 0));
   }, [cart]);
 
   return (
-    <OrderContext.Provider value={{ cart, total, addToCart, removeFromCart }}>
+    <OrderContext.Provider
+      value={{
+        cart,
+        total,
+        addToCart,
+        removeFromCart,
+        clearCart, // Función para vaciar el carrito
+      }}
+    >
       {children}
     </OrderContext.Provider>
   );

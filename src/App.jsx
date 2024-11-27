@@ -61,6 +61,7 @@ function App() {
         <LoginForm
           isAuthenticated={isAuthenticated}
           setIsAuthenticated={setIsAuthenticated}
+          setIsAdmin={setIsAdmin}
         />
       )}
     </Router>

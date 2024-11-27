@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { loginUser } from "../services/auth";
 
-export const LoginForm = ({ isAuthenticated, setIsAuthenticated }) => {
+export const LoginForm = ({ isAuthenticated, setIsAuthenticated, setIsAdmin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
