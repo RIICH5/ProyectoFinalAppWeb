@@ -1,11 +1,13 @@
 import React, { useContext } from "react";
 import { MenuContext } from "../contexts/MenuContext"; // Contexto para datos del menú
+import { OrderContext } from "../contexts/OrderContext"; // Contexto para el carrito
 import { useLocation } from "react-router-dom"; // Para detectar la ruta actual
 import { doc, updateDoc, deleteDoc } from "firebase/firestore"; // Para Firestore
 import { db } from "../services/firebaseConfig"; // Configuración de Firebase
 
 export const Item = ({ id, name, description, price, category, available }) => {
   const { menuItems, setMenuItems } = useContext(MenuContext);
+  const { addToCart } = useContext(OrderContext); // Usar la función para agregar al carrito
   const location = useLocation(); // Ruta actual
 
   const handleToggleAvailability = async () => {
@@ -42,7 +44,7 @@ export const Item = ({ id, name, description, price, category, available }) => {
       </p>
       <p className="text-gray-500">Categoría: {category}</p>
 
-      {/* Solo muestra los botones si estamos en el panel de administración */}
+      {/* Opciones en el panel de administración */}
       {location.pathname === "/admin" && (
         <div className="flex gap-4 mt-4">
           <button
@@ -58,6 +60,16 @@ export const Item = ({ id, name, description, price, category, available }) => {
             Eliminar
           </button>
         </div>
+      )}
+
+      {/* Botón de agregar al carrito en la vista del menú */}
+      {location.pathname === "/" && available && (
+        <button
+          onClick={() => addToCart({ id, name, price, quantity: 1 })}
+          className="bg-blue-500 text-white px-4 py-2 mt-2 rounded"
+        >
+          Agregar al Carrito
+        </button>
       )}
     </div>
   );
