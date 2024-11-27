@@ -1,27 +1,24 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Header } from "./components/Header";
 import { Menu } from "./components/Menu";
 import { Orders } from "./components/Orders";
 import { LoginForm } from "./components/LoginForm";
-import AdminPanel from "./components/Admin/AdminPanel"; // Ruta ajustada
+import AdminPanel from "./components/Admin/AdminPanel";
+import { MenuProvider } from "./contexts/MenuContext"; 
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
 
-  // Verificar si el usuario está autenticado y obtener el rol
   useEffect(() => {
-    const checkAuth = async () => {
+    const checkAuth = () => {
       const storedUser = JSON.parse(localStorage.getItem("user"));
       if (storedUser) {
         setUser(storedUser);
         setIsAuthenticated(true);
-        // Verificamos si el usuario es admin
-        if (storedUser.role === "admin") {
-          setIsAdmin(true);
-        }
+        setIsAdmin(storedUser.role === "admin");
       }
     };
     checkAuth();
@@ -36,35 +33,18 @@ function App() {
         setIsAuthenticated={setIsAuthenticated}
       />
       {isAuthenticated ? (
-        <div className="container mx-auto px-4">
-          <Routes>
-            {/* Ruta principal del menú */}
-            <Route
-              path="/"
-              element={
-                isAdmin ? (
-                  <h1 className="text-3xl font-bold">Bienvenido Administrador</h1>
-                ) : (
-                  <Menu />
-                )
-              }
-            />
-            {/* Ruta para el panel administrativo */}
-            {isAdmin && (
+        <MenuProvider>
+          <div className="container mx-auto px-4">
+            <Routes>
               <Route
-                path="/admin"
-                element={<AdminPanel />}
+                path="/"
+                element={isAdmin ? <h1 className="text-3xl font-bold">Bienvenido Administrador</h1> : <Menu />}
               />
-            )}
-            {/* Ruta para pedidos */}
-            {!isAdmin && (
-              <Route
-                path="/orders"
-                element={<Orders />}
-              />
-            )}
-          </Routes>
-        </div>
+              {isAdmin && <Route path="/admin" element={<AdminPanel />} />}
+              {!isAdmin && <Route path="/orders" element={<Orders />} />}
+            </Routes>
+          </div>
+        </MenuProvider>
       ) : (
         <LoginForm
           isAuthenticated={isAuthenticated}
