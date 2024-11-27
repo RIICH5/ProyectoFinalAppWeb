@@ -1,14 +1,13 @@
 import React, { useContext } from "react";
-import { MenuContext } from "../contexts/MenuContext"; // Asegúrate de importar el contexto
-import { useLocation } from "react-router-dom"; // Asegúrate de importar esto
+import { MenuContext } from "../contexts/MenuContext"; 
+import { useLocation } from "react-router-dom"; 
 
-export const Item = ({ id, name, description, price, category, status }) => {
+export const Item = ({ id, name, description, price, category, status, imageUrl }) => {
   const { menuItems, setMenuItems } = useContext(MenuContext);
-  const location = useLocation();  // Obtén la ruta actual
+  const location = useLocation(); 
 
   const handleEdit = () => {
-    // Lógica para editar un item
-    const updatedItem = { id, name, description, price: price + 1, category, status };
+    const updatedItem = { id, name, description, price: price + 1, category, status, imageUrl };
     setMenuItems(menuItems.map(item => (item.id === id ? updatedItem : item)));
   };
 
@@ -26,7 +25,10 @@ export const Item = ({ id, name, description, price, category, status }) => {
       </p>
       <p className="text-gray-500">Categoría: {category}</p>
 
-      {/* Solo muestra los botones si estamos en el panel de administración */}
+      {/* Mostrar imagen solo si hay una URL de imagen */}
+      {imageUrl && <img src={imageUrl} alt={name} className="mt-2 w-full h-auto" />}
+
+      {/* Solo mostrar los botones si estamos en el panel de administración */}
       {location.pathname === "/admin" && (
         <>
           <button onClick={handleEdit} className="mt-2 text-blue-500">
@@ -40,4 +42,3 @@ export const Item = ({ id, name, description, price, category, status }) => {
     </div>
   );
 };
-

@@ -1,20 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from "react-router-dom"; // Importa el hook useNavigate
-import { logoutUser } from "../services/auth";
+import { logoutUser } from "../services/auth"; // Asumiendo que tienes una función de logout
 
-export const Header = ({
-  isAdmin,
-  setIsAdmin,
-  isAuthenticated,
-  setIsAuthenticated,
-}) => {
+export const Header = ({ isAuthenticated, setIsAuthenticated }) => {
   const navigate = useNavigate(); // Inicializa el hook para navegar
-
-  const handleUser = () => {
-    setIsAdmin(!isAdmin);
-    // Redirige al panel de Admin o al menú de usuario según el estado
-    navigate(isAdmin ? "/" : "/admin");
-  };
 
   return (
     <header className="bg-gray-800 text-white p-4">
@@ -24,15 +13,8 @@ export const Header = ({
         </h1>
         <nav>
           <ul className="flex space-x-4">
-            <li>
-              <button
-                onClick={handleUser}
-                className="bg-white text-gray-800 px-2 py-1 rounded"
-              >
-                {isAdmin ? "Admin" : "User"}
-              </button>
-            </li>
-            {isAuthenticated && (
+            {/* Si el usuario está autenticado, muestra el botón de Logout */}
+            {isAuthenticated ? (
               <li>
                 <button
                   onClick={async () => {
@@ -45,6 +27,20 @@ export const Header = ({
                   Logout
                 </button>
               </li>
+            ) : (
+              // Si el usuario no está autenticado, muestra los enlaces para Login y Register
+              <>
+                <li>
+                  <a href="/login" className="text-white px-2 py-1 rounded hover:bg-gray-600">
+                    Login
+                  </a>
+                </li>
+                <li>
+                  <a href="/register" className="text-white px-2 py-1 rounded hover:bg-gray-600">
+                    Register
+                  </a>
+                </li>
+              </>
             )}
           </ul>
         </nav>

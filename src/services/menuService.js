@@ -54,3 +54,17 @@ export const updateMenuItem = async (item) => {
     throw new Error("Error al actualizar el elemento del menú.");
   }
 };
+
+// Actualizar la disponibilidad de un producto
+export const updateAvailability = async (id, available) => {
+  try {
+    const docRef = doc(db, "Menu", id);
+    await updateDoc(docRef, { available });
+    console.log("Disponibilidad actualizada para el producto con ID: ", id);
+  } catch (error) {
+    console.error("Error updating product availability:", error);
+    throw new Error("Error al actualizar la disponibilidad del producto.");
+  }
+};
+
+

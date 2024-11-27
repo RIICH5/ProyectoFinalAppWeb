@@ -1,22 +1,27 @@
 import React, { useState } from "react";
-import { loginUser } from "../services/auth";
+import { loginUser } from "../services/auth"; // Asumiendo que loginUser es tu función de autenticación
 
-export const LoginForm = ({ isAuthenticated, setIsAuthenticated }) => {
+export const LoginForm = ({ setIsAuthenticated, setIsAdmin, handleLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const { user, error } = await loginUser(email, password);
 
     if (user) {
-        setIsAuthenticated(true);
-        setIsAdmin(user.role === "admin"); //verificar el rol
+      setIsAuthenticated(true); // Cambia el estado de autenticación a true
+      setIsAdmin(user.role === "admin"); // Establece el rol de admin
+      localStorage.setItem("user", JSON.stringify(user)); // Guarda el usuario en localStorage
+
+      // Llama a handleLogin para almacenar los datos del usuario
+      handleLogin(user);
     }
 
     if (error) {
-      setError(error);
+      setError(error); // Si hay un error en el login, lo muestra
     }
   };
 
@@ -31,8 +36,7 @@ export const LoginForm = ({ isAuthenticated, setIsAuthenticated }) => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div
-              className="bg-red-100 border border-red-400
-             text-red-700 px-4 py-3 rounded relative"
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
               role="alert"
             >
               <strong className="font-bold">Error:</strong>
