@@ -1,8 +1,7 @@
-
 import React, { useContext, useState, useEffect } from "react";
 import { MenuContext } from "../../contexts/MenuContext";
 import { db } from "../../services/firebaseConfig";
-import { collection, getDocs, doc, deleteDoc, addDoc, updateDoc } from "firebase/firestore"; 
+import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc } from "firebase/firestore"; 
 
 export const ManageMenu = () => {
   const { items, setItems } = useContext(MenuContext); // Usamos el contexto
@@ -10,19 +9,17 @@ export const ManageMenu = () => {
   const [editItem, setEditItem] = useState(null); // Para la edición de los productos
   const [filterCategory, setFilterCategory] = useState("Todas"); // Filtro de categorías
 
-  // Cargar los elementos del menú al inicio desde Firebase
+  // Cargar los elementos del menú en tiempo real desde Firebase
   useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const menuCollection = collection(db, "menu");
-        const snapshot = await getDocs(menuCollection);
-        const menuItems = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-        setItems(menuItems); // Establece los elementos en el contexto
-      } catch (error) {
-        console.error("Error al cargar el menú", error);
-      }
-    };
-    fetchItems();
+    const unsubscribe = onSnapshot(collection(db, "menu"), (snapshot) => {
+      const menuItems = snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setItems(menuItems); // Actualiza los elementos en el contexto en tiempo real
+    });
+
+    return () => unsubscribe(); // Limpia la suscripción al desmontar el componente
   }, [setItems]);
 
   // Agregar un producto al menú y a Firebase
@@ -32,8 +29,11 @@ export const ManageMenu = () => {
       return;
     }
     try {
-      const docRef = await addDoc(collection(db, "menu"), newItem);
-      setItems([...items, { ...newItem, id: docRef.id }]); // Agrega el nuevo producto al estado
+      const docRef = await addDoc(collection(db, "menu"), {
+        ...newItem,
+        available: true, // Por defecto, disponible
+      });
+      setItems([...items, { ...newItem, id: docRef.id, available: true }]); // Agrega el nuevo producto al estado
       setNewItem({ name: "", description: "", price: 0, category: "", image: null }); // Reinicia el formulario
     } catch (error) {
       console.error("Error al agregar el producto", error);
@@ -64,6 +64,21 @@ export const ManageMenu = () => {
       setItems(items.filter(item => item.id !== id)); // Elimina el producto del estado
     } catch (error) {
       console.error("Error al eliminar el producto", error);
+    }
+  };
+
+  // Cambiar disponibilidad del producto
+  const handleToggleAvailability = async (id, currentAvailability) => {
+    try {
+      const itemDoc = doc(db, "menu", id);
+      await updateDoc(itemDoc, { available: !currentAvailability });
+      setItems(
+        items.map((item) =>
+          item.id === id ? { ...item, available: !currentAvailability } : item
+        )
+      );
+    } catch (error) {
+      console.error("Error al cambiar la disponibilidad del producto", error);
     }
   };
 
@@ -174,14 +189,22 @@ export const ManageMenu = () => {
       <div>
         {filteredItems && filteredItems.length > 0 ? (
           filteredItems.map((item) => (
-            <div key={item.id} className="flex justify-between items-center border-b py-2">
+            <div key={item.id} className={`flex justify-between items-center border-b py-2 ${item.available ? "" : "opacity-50"}`}>
               <span>{item.name} - {item.category}</span>
-              <button onClick={() => setEditItem(item)} className="bg-yellow-500 text-white p-1 rounded">
-                Editar
-              </button>
-              <button onClick={() => handleDeleteItem(item.id)} className="bg-red-500 text-white p-1 rounded">
-                Eliminar
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleToggleAvailability(item.id, item.available)}
+                  className={`p-1 rounded ${item.available ? "bg-green-500" : "bg-gray-500"} text-white`}
+                >
+                  {item.available ? "Disponible" : "Agotado"}
+                </button>
+                <button onClick={() => setEditItem(item)} className="bg-yellow-500 text-white p-1 rounded">
+                  Editar
+                </button>
+                <button onClick={() => handleDeleteItem(item.id)} className="bg-red-500 text-white p-1 rounded">
+                  Eliminar
+                </button>
+              </div>
             </div>
           ))
         ) : (

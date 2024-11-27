@@ -6,6 +6,7 @@ import { Orders } from "./components/Orders";
 import { LoginForm } from "./components/LoginForm";
 import AdminPanel from "./components/Admin/AdminPanel";
 import { MenuProvider } from "./contexts/MenuContext"; 
+import MenuView from './components/Menu/MenuView'; 
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
