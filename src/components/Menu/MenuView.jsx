@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { db } from "../../services/firebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
+import { OrderContext } from "../../contexts/OrderContext"; // Importar el contexto del carrito
 
 const MenuView = () => {
   const [menuItems, setMenuItems] = useState([]); // Estado para los productos
   const [selectedCategory, setSelectedCategory] = useState("Todas"); // Filtro de categorías
   const [loading, setLoading] = useState(true); // Indicador de carga
   const [error, setError] = useState(null); // Manejo de errores
+  const { addToCart } = useContext(OrderContext); // Usar la función para agregar al carrito
 
   // Cargar productos desde Firestore en tiempo real
   useEffect(() => {
@@ -71,11 +73,27 @@ const MenuView = () => {
                 className={`border-b p-4 ${item.available ? "" : "opacity-50"}`}
               >
                 <h3 className="font-bold">{item.name}</h3>
+                <p>{item.description}</p>
                 <p>Precio: ${item.price.toFixed(2)}</p>
                 <p className={item.available ? "text-green-600" : "text-red-600"}>
                   {item.available ? "Disponible" : "Agotado"}
                 </p>
                 <p>Categoría: {item.category}</p>
+                {item.available ? (
+                  <button
+                    onClick={() => addToCart(item)} // Llama a la función para agregar al carrito
+                    className="bg-blue-500 text-white px-4 py-2 mt-2 rounded"
+                  >
+                    Agregar al Carrito
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="bg-gray-500 text-white px-4 py-2 mt-2 rounded opacity-50 cursor-not-allowed"
+                  >
+                    No Disponible
+                  </button>
+                )}
               </li>
             ))
           ) : (

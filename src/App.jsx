@@ -7,6 +7,9 @@ import { LoginForm } from "./components/LoginForm";
 import AdminPanel from "./components/Admin/AdminPanel";
 import { MenuProvider } from "./contexts/MenuContext"; 
 import MenuView from './components/Menu/MenuView'; 
+import { OrderProvider } from "./contexts/OrderContext"; // Contexto para pedidos
+import OrderCart from "./components/OrderCart"; // Componente del carrito
+import OrderHistory from "./components/OrderHistory"; // Componente del historial
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -35,16 +38,24 @@ function App() {
       />
       {isAuthenticated ? (
         <MenuProvider>
-          <div className="container mx-auto px-4">
-            <Routes>
-              <Route
-                path="/"
-                element={isAdmin ? <h1 className="text-3xl font-bold">Bienvenido Administrador</h1> : <Menu />}
-              />
-              {isAdmin && <Route path="/admin" element={<AdminPanel />} />}
-              {!isAdmin && <Route path="/orders" element={<Orders />} />}
-            </Routes>
-          </div>
+          <OrderProvider> {/* Encierra las rutas con el contexto de pedidos */}
+            <div className="container mx-auto px-4">
+              <Routes>
+                <Route
+                  path="/"
+                  element={isAdmin ? <h1 className="text-3xl font-bold">Bienvenido Administrador</h1> : <Menu />}
+                />
+                {isAdmin && <Route path="/admin" element={<AdminPanel />} />}
+                {!isAdmin && (
+                  <>
+                    <Route path="/orders" element={<Orders />} />
+                    <Route path="/cart" element={<OrderCart userId={user?.id} />} /> {/* Carrito */}
+                    <Route path="/history" element={<OrderHistory userId={user?.id} />} /> {/* Historial */}
+                  </>
+                )}
+              </Routes>
+            </div>
+          </OrderProvider>
         </MenuProvider>
       ) : (
         <LoginForm
