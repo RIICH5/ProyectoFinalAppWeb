@@ -36,7 +36,7 @@ const registerUser = async (email, password, isAdmin = true) => {
 };
 
 // Login a user
-export const loginUser = async (email, password) => {
+const loginUser = async (email, password) => {
   try {
     const userCredential = await signInWithEmailAndPassword(
       auth,
