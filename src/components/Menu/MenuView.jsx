@@ -8,7 +8,10 @@ const MenuView = () => {
   const [selectedCategory, setSelectedCategory] = useState("Todas"); // Filtro de categorías
   const [loading, setLoading] = useState(true); // Indicador de carga
   const [error, setError] = useState(null); // Manejo de errores
-  const { addToCart } = useContext(OrderContext); // Usar la función para agregar al carrito
+  const { cartItems = [], addToCart, removeFromCart } = useContext(OrderContext); // Usar el contexto del carrito
+  
+  // Estado para manejar el feedback visual de agregar/quitar productos
+  const [itemFeedback, setItemFeedback] = useState({}); // Un objeto para manejar el feedback por cada producto
 
   // Cargar productos desde Firestore en tiempo real
   useEffect(() => {
@@ -37,6 +40,28 @@ const MenuView = () => {
     selectedCategory === "Todas"
       ? menuItems
       : menuItems.filter((item) => item.category === selectedCategory);
+
+  // Función para verificar si el producto ya está en el carrito
+  const isInCart = (productId) => {
+    return cartItems.some(item => item.id === productId);
+  };
+
+  // Función para manejar el feedback de agregar o quitar del carrito
+  const handleAddToCart = (item) => {
+    setItemFeedback((prev) => ({ ...prev, [item.id]: "adding" })); // Activar feedback de agregar
+    addToCart(item);
+    setTimeout(() => {
+      setItemFeedback((prev) => ({ ...prev, [item.id]: null })); // Restablecer feedback después de 1 segundo
+    }, 1000);
+  };
+
+  const handleRemoveFromCart = (item) => {
+    setItemFeedback((prev) => ({ ...prev, [item.id]: "removing" })); // Activar feedback de quitar
+    removeFromCart(item.id);
+    setTimeout(() => {
+      setItemFeedback((prev) => ({ ...prev, [item.id]: null })); // Restablecer feedback después de 1 segundo
+    }, 1000);
+  };
 
   return (
     <div className="menu-view">
@@ -81,10 +106,21 @@ const MenuView = () => {
                 <p>Categoría: {item.category}</p>
                 {item.available ? (
                   <button
-                    onClick={() => addToCart(item)} // Llama a la función para agregar al carrito
-                    className="bg-blue-500 text-white px-4 py-2 mt-2 rounded"
+                    onClick={() => {
+                      if (isInCart(item.id)) {
+                        // Si ya está en el carrito, lo eliminamos
+                        handleRemoveFromCart(item);
+                      } else {
+                        // Si no está en el carrito, lo agregamos
+                        handleAddToCart(item);
+                      }
+                    }}
+                    className={`bg-blue-500 text-white px-4 py-2 mt-2 rounded 
+                      ${isInCart(item.id) ? "bg-green-500" : "bg-blue-500"} 
+                      ${itemFeedback[item.id] === "adding" ? "animate-pulse bg-green-400" : ""} 
+                      ${itemFeedback[item.id] === "removing" ? "animate-pulse bg-red-400" : ""}`}
                   >
-                    Agregar al Carrito
+                    {isInCart(item.id) ? "Quitar del Carrito" : "Agregar al Carrito"}
                   </button>
                 ) : (
                   <button

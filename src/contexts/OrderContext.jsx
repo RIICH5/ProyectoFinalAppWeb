@@ -1,9 +1,14 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
 
+// Crear el contexto para el carrito
 export const OrderContext = createContext();
 
 export const OrderProvider = ({ children }) => {
-  const [cart, setCart] = useState([]); // Estado del carrito
+  const [cart, setCart] = useState(() => {
+    // Intentamos obtener el carrito desde localStorage al iniciar
+    const savedCart = localStorage.getItem('cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [total, setTotal] = useState(0); // Total del carrito
 
   // Agregar producto al carrito
@@ -31,10 +36,14 @@ export const OrderProvider = ({ children }) => {
     setCart([]);
   };
 
-  // Actualizar el total del carrito en tiempo real
-  React.useEffect(() => {
-    setTotal(cart.reduce((sum, item) => sum + item.price * item.quantity, 0));
-  }, [cart]);
+  // Calcular el total del carrito en tiempo real
+  useEffect(() => {
+    const newTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    setTotal(newTotal);
+
+    // Guardar el carrito en localStorage cada vez que cambie
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]); // Solo se ejecuta cuando cambia el carrito
 
   return (
     <OrderContext.Provider
