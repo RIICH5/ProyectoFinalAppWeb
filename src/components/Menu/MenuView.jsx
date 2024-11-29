@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { db } from "../../services/firebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
-import { OrderContext } from "../../contexts/OrderContext"; // Importar el contexto del carrito
+import { OrderContext } from "../../contexts/OrderContext"; // Usamos el contexto del carrito
 import { useNavigate } from "react-router-dom"; // Para navegar a la página del carrito
 
 const MenuView = () => {
@@ -9,7 +9,7 @@ const MenuView = () => {
   const [selectedCategory, setSelectedCategory] = useState("Todas"); // Filtro de categorías
   const [loading, setLoading] = useState(true); // Indicador de carga
   const [error, setError] = useState(null); // Manejo de errores
-  const { cartItems = [], addToCart, removeFromCart } = useContext(OrderContext); // Usar el contexto del carrito
+  const { cart, total, addToCart, removeFromCart } = useContext(OrderContext); // Accedemos al carrito y al total
   const [itemFeedback, setItemFeedback] = useState({}); // Un objeto para manejar el feedback por cada producto
   
   // Navegación al carrito
@@ -45,7 +45,7 @@ const MenuView = () => {
 
   // Función para verificar si el producto ya está en el carrito
   const isInCart = (productId) => {
-    return cartItems.some(item => item.id === productId);
+    return cart.some(item => item.id === productId);
   };
 
   // Función para manejar el feedback de agregar o quitar del carrito
@@ -63,11 +63,6 @@ const MenuView = () => {
     setTimeout(() => {
       setItemFeedback((prev) => ({ ...prev, [item.id]: null })); // Restablecer feedback después de 1 segundo
     }, 1000);
-  };
-
-  // Función para calcular el total del carrito
-  const calculateTotal = () => {
-    return cartItems.reduce((total, item) => total + item.price, 0).toFixed(2);
   };
 
   return (
@@ -145,27 +140,33 @@ const MenuView = () => {
         </div>
       )}
 
-      {/* Resumen del carrito */}
+      {/* Resumen del carrito visible en el menú */}
       <div className="cart-summary mt-8 p-4 bg-gray-100 rounded">
         <h3 className="text-xl font-bold mb-2">Resumen del Carrito</h3>
-        <ul className="mb-4">
-          {cartItems.map((item) => (
-            <li key={item.id} className="flex justify-between mb-2">
-              <span>{item.name} x{item.quantity}</span>
-              <span>${(item.price * item.quantity).toFixed(2)}</span>
-            </li>
-          ))}
-        </ul>
-        <div className="flex justify-between mb-4 font-bold">
-          <span>Total</span>
-          <span>${calculateTotal()}</span>
-        </div>
-        <button
-          onClick={() => navigate("/cart")}
-          className="w-full bg-blue-500 text-white py-2 rounded"
-        >
-          Ir al Carrito
-        </button>
+        {cart.length === 0 ? (
+          <p className="text-center text-gray-500">Tu carrito está vacío.</p>
+        ) : (
+          <>
+            <ul className="mb-4">
+              {cart.map((item) => (
+                <li key={item.id} className="flex justify-between mb-2">
+                  <span>{item.name} x{item.quantity}</span>
+                  <span>${(item.price * item.quantity).toFixed(2)}</span>
+                </li>
+              ))}
+            </ul>
+            <div className="flex justify-between mb-4 font-bold">
+              <span>Total</span>
+              <span>${total.toFixed(2)}</span>
+            </div>
+            <button
+              onClick={() => navigate("/cart")}
+              className="w-full bg-blue-500 text-white py-2 rounded"
+            >
+              Ir al Carrito
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
