@@ -6,6 +6,7 @@ import MenuView from "./components/Menu/MenuView";
 import OrderCart from "./components/OrderCart";
 import OrderHistory from "./components/OrderHistory";
 import { LoginForm } from "./components/LoginForm";
+import { RegisterForm } from "./components/RegisterForm"; // Importar el formulario de registro
 import ProtectedRoute from "./components/ProtectedRoute";
 import { MenuProvider } from "./contexts/MenuContext";
 import { OrderProvider } from "./contexts/OrderContext";
@@ -24,11 +25,12 @@ function App() {
         setIsAuthenticated(true);
         setIsAdmin(storedUser.role === "admin");
       }
-      setIsCheckingAuth(false);
+      setIsCheckingAuth(false); // Finaliza la verificación
     };
     checkAuth();
   }, []);
 
+  // Muestra una pantalla de carga mientras se verifica la autenticación
   if (isCheckingAuth) {
     return <p className="text-center mt-20">Cargando...</p>;
   }
@@ -58,6 +60,12 @@ function App() {
                     <Navigate to={isAdmin ? "/admin" : "/menu"} />
                   )
                 }
+              />
+
+              {/* Ruta para registrar un nuevo usuario */}
+              <Route
+                path="/register"
+                element={<RegisterForm />}
               />
 
               {/* Rutas protegidas */}
