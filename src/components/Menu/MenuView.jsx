@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { db } from "../../services/firebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
 import { OrderContext } from "../../contexts/OrderContext"; // Importar el contexto del carrito
+import { useNavigate } from "react-router-dom"; // Para navegar a la página del carrito
 
 const MenuView = () => {
   const [menuItems, setMenuItems] = useState([]); // Estado para los productos
@@ -9,9 +10,10 @@ const MenuView = () => {
   const [loading, setLoading] = useState(true); // Indicador de carga
   const [error, setError] = useState(null); // Manejo de errores
   const { cartItems = [], addToCart, removeFromCart } = useContext(OrderContext); // Usar el contexto del carrito
-  
-  // Estado para manejar el feedback visual de agregar/quitar productos
   const [itemFeedback, setItemFeedback] = useState({}); // Un objeto para manejar el feedback por cada producto
+  
+  // Navegación al carrito
+  const navigate = useNavigate();
 
   // Cargar productos desde Firestore en tiempo real
   useEffect(() => {
@@ -63,6 +65,11 @@ const MenuView = () => {
     }, 1000);
   };
 
+  // Función para calcular el total del carrito
+  const calculateTotal = () => {
+    return cartItems.reduce((total, item) => total + item.price, 0).toFixed(2);
+  };
+
   return (
     <div className="menu-view">
       <h1 className="text-2xl font-bold mb-4">Menú</h1>
@@ -90,12 +97,12 @@ const MenuView = () => {
 
       {/* Listado de Productos */}
       {!loading && !error && (
-        <ul>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           {filteredItems.length > 0 ? (
             filteredItems.map((item) => (
-              <li
+              <div
                 key={item.id}
-                className={`border-b p-4 ${item.available ? "" : "opacity-50"}`}
+                className={`border p-4 ${item.available ? "" : "opacity-50"}`}
               >
                 <h3 className="font-bold">{item.name}</h3>
                 <p>{item.description}</p>
@@ -104,14 +111,14 @@ const MenuView = () => {
                   {item.available ? "Disponible" : "Agotado"}
                 </p>
                 <p>Categoría: {item.category}</p>
+
+                {/* Botón de agregar o quitar del carrito */}
                 {item.available ? (
                   <button
                     onClick={() => {
                       if (isInCart(item.id)) {
-                        // Si ya está en el carrito, lo eliminamos
                         handleRemoveFromCart(item);
                       } else {
-                        // Si no está en el carrito, lo agregamos
                         handleAddToCart(item);
                       }
                     }}
@@ -130,13 +137,36 @@ const MenuView = () => {
                     No Disponible
                   </button>
                 )}
-              </li>
+              </div>
             ))
           ) : (
             <p>No hay productos en esta categoría.</p>
           )}
-        </ul>
+        </div>
       )}
+
+      {/* Resumen del carrito */}
+      <div className="cart-summary mt-8 p-4 bg-gray-100 rounded">
+        <h3 className="text-xl font-bold mb-2">Resumen del Carrito</h3>
+        <ul className="mb-4">
+          {cartItems.map((item) => (
+            <li key={item.id} className="flex justify-between mb-2">
+              <span>{item.name} x{item.quantity}</span>
+              <span>${(item.price * item.quantity).toFixed(2)}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="flex justify-between mb-4 font-bold">
+          <span>Total</span>
+          <span>${calculateTotal()}</span>
+        </div>
+        <button
+          onClick={() => navigate("/cart")}
+          className="w-full bg-blue-500 text-white py-2 rounded"
+        >
+          Ir al Carrito
+        </button>
+      </div>
     </div>
   );
 };

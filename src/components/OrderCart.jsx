@@ -75,7 +75,7 @@ const OrderCart = () => {
               onClick={handleConfirmOrder}
               className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg shadow-lg"
             >
-              Confirmar Pedido
+              Realizar Pago
             </button>
           </div>
         </>
