@@ -3,10 +3,13 @@ import { db } from "../services/firebaseConfig";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { OrderContext } from "../contexts/OrderContext";
 import { getAuth } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+
 
 const OrderCart = () => {
   const { cart, total, removeFromCart, clearCart } = useContext(OrderContext);
   const auth = getAuth();
+  const navigate = useNavigate();
   const userId = auth.currentUser?.uid;
 
   const handleConfirmOrder = async () => {
@@ -72,7 +75,7 @@ const OrderCart = () => {
           </div>
           <div className="mt-6 flex justify-end">
             <button
-              onClick={handleConfirmOrder}
+              onClick={() => navigate("/checkout")}
               className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg shadow-lg"
             >
               Realizar Pago

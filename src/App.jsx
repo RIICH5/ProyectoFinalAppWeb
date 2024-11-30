@@ -10,6 +10,9 @@ import { RegisterForm } from "./components/RegisterForm"; // Importar el formula
 import ProtectedRoute from "./components/ProtectedRoute";
 import { MenuProvider } from "./contexts/MenuContext";
 import { OrderProvider } from "./contexts/OrderContext";
+import CheckoutPage from "./components/Checkout/CheckoutPage";
+import PaymentSuccess from "./components/Checkout/PaymentSuccess";
+import PaymentFailure from "./components/Checkout/PaymentFailure";
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -101,6 +104,10 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              <Route path="/checkout" element={<CheckoutPage />} />
+              <Route path="/payment-success" element={<PaymentSuccess />} />
+              <Route path="/payment-failure" element={<PaymentFailure />} />
 
               {/* Ruta para redirigir rutas desconocidas */}
               <Route path="*" element={<Navigate to="/" />} />
