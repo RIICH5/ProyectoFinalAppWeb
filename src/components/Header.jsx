@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { logoutUser } from "../services/auth";
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { OrderContext } from "../contexts/OrderContext";
 
 export const Header = ({
   isAdmin,
@@ -7,42 +8,190 @@ export const Header = ({
   isAuthenticated,
   setIsAuthenticated,
 }) => {
-  const handleUser = () => {
+  const { cart } = useContext(OrderContext); // Accede al carrito
+  const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // Estado del menú móvil
+
+  const handleUserToggle = () => {
     setIsAdmin(!isAdmin);
+    navigate(isAdmin ? "/menu" : "/admin");
+  };
+
+  const handleLogout = async () => {
+    setIsAuthenticated(false);
+    navigate("/"); // Redirige al inicio de sesión
+  };
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen); // Alternar estado del menú móvil
   };
 
   return (
-    <header className="bg-gray-800 text-white p-4">
-      <div className="container mx-auto flex justify-between items-center">
-        <h1 className="text-2xl font-bold">
-          <a href="/">Restaurant</a>
-        </h1>
-        <nav>
-          <ul className="flex space-x-4">
-            <li>
+    <header className="bg-gray-800 text-white shadow-md sticky top-0 z-50">
+      <div className="container mx-auto px-4 flex justify-between items-center py-4">
+        {/* Logo */}
+        <div
+          onClick={() => navigate("/")}
+          className="cursor-pointer text-2xl font-bold tracking-wide text-indigo-300 hover:text-indigo-500"
+        >
+          Restaurante
+        </div>
+
+        {/* Navegación en escritorio */}
+        <nav className="hidden md:flex space-x-6">
+          <button
+            onClick={() => navigate("/menu")}
+            className="hover:text-indigo-400 transition-colors"
+          >
+            Menú
+          </button>
+          {isAdmin && (
+            <button
+              onClick={() => navigate("/admin")}
+              className="hover:text-indigo-400 transition-colors"
+            >
+              Administración
+            </button>
+          )}
+          {isAuthenticated && (
+            <>
               <button
-                onClick={handleUser}
-                className="bg-white text-gray-800 px-2 py-1 rounded"
+                onClick={() => navigate("/history")}
+                className="hover:text-indigo-400 transition-colors"
               >
-                {isAdmin ? "Admin" : "User"}
+                Historial de Pedidos
               </button>
-            </li>
-            {isAuthenticated && (
-              <li>
-                <button
-                  onClick={async () => {
-                    await logoutUser();
-                    setIsAuthenticated(false);
-                  }}
-                  className="bg-white text-gray-800 px-2 py-1 rounded"
+              {/* Ícono del carrito en computadoras */}
+              <button
+                onClick={() => navigate("/cart")}
+                className="relative hover:text-indigo-400 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
                 >
-                  Logout
-                </button>
-              </li>
-            )}
-          </ul>
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.6 8h11.2l-1.6-8M13 9h1m-6 0h1"
+                  />
+                </svg>
+                {cart.length > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
+                    {cart.length}
+                  </span>
+                )}
+              </button>
+            </>
+          )}
         </nav>
+
+        {/* Controles */}
+        <div className="flex items-center space-x-4">
+          {isAuthenticated ? (
+            <>
+              <button
+                onClick={handleUserToggle}
+                className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition"
+              >
+                {isAdmin ? "Panel Admin" : "Menú"}
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition"
+              >
+                Cerrar Sesión
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => navigate("/")}
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition"
+            >
+              Iniciar Sesión
+            </button>
+          )}
+        </div>
+
+        {/* Menú móvil */}
+        <div className="md:hidden flex items-center">
+          <button
+            onClick={toggleMobileMenu}
+            className="text-white hover:text-indigo-400 transition"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-6 w-6"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 6h16M4 12h16m-7 6h7"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {/* Menú móvil desplegable */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden bg-gray-700 text-white py-4">
+          <button
+            onClick={() => navigate("/menu")}
+            className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+          >
+            Menú
+          </button>
+          {isAdmin && (
+            <button
+              onClick={() => navigate("/admin")}
+              className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+            >
+              Administración
+            </button>
+          )}
+          {isAuthenticated && (
+            <>
+              <button
+                onClick={() => navigate("/history")}
+                className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+              >
+                Historial de Pedidos
+              </button>
+              {/* Texto del carrito en menú móvil */}
+              <button
+                onClick={() => navigate("/cart")}
+                className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+              >
+                Carrito de Compras
+              </button>
+            </>
+          )}
+          {isAuthenticated ? (
+            <button
+              onClick={handleLogout}
+              className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+            >
+              Cerrar Sesión
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/")}
+              className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+            >
+              Iniciar Sesión
+            </button>
+          )}
+        </div>
+      )}
     </header>
   );
 };

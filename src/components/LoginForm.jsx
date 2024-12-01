@@ -1,17 +1,20 @@
 import React, { useState } from "react";
 import { loginUser } from "../services/auth";
+import { useNavigate } from "react-router-dom"; // Importar useNavigate
 
-export const LoginForm = ({ isAuthenticated, setIsAuthenticated }) => {
+export const LoginForm = ({ setIsAuthenticated, setIsAdmin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const navigate = useNavigate(); // Inicializar navigate
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { user, error } = await loginUser(email, password);
 
     if (user) {
-        setIsAuthenticated(true);
+      setIsAuthenticated(true);
+      setIsAdmin(user.role === "admin");
     }
 
     if (error) {
@@ -30,8 +33,7 @@ export const LoginForm = ({ isAuthenticated, setIsAuthenticated }) => {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           {error && (
             <div
-              className="bg-red-100 border border-red-400
-             text-red-700 px-4 py-3 rounded relative"
+              className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
               role="alert"
             >
               <strong className="font-bold">Error:</strong>
@@ -59,7 +61,6 @@ export const LoginForm = ({ isAuthenticated, setIsAuthenticated }) => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-
             <div className="py-6">
               <button
                 type="submit"
@@ -70,7 +71,18 @@ export const LoginForm = ({ isAuthenticated, setIsAuthenticated }) => {
             </div>
           </div>
         </form>
+        <p className="text-center mt-4">
+          ¿No tienes una cuenta?{" "}
+          <button
+            onClick={() => navigate("/register")}
+            className="text-blue-500 underline"
+          >
+            Regístrate
+          </button>
+        </p>
       </div>
     </div>
   );
 };
+
+export default LoginForm;
