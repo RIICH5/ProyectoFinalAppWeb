@@ -1,53 +1,49 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { getAuth } from "firebase/auth";
 import { getDoc, doc } from "firebase/firestore";
-import { db } from "../services/firebaseConfig";  // Asegúrate de que esta ruta sea correcta
+import { db } from "../services/firebaseConfig";  // Importa correctamente tu configuración de Firebase
 
 const ProtectedRoute = ({ children, requiredRole }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
 
   useEffect(() => {
-    const auth = getAuth();
-    
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const fetchRole = async () => {
       if (currentUser) {
-        // Si el usuario está autenticado, obtenemos su rol desde Firestore
-        try {
-          const userDocRef = doc(db, "Users", currentUser.uid);
-          const userDoc = await getDoc(userDocRef);
-          
-          if (userDoc.exists()) {
-            const userData = userDoc.data();
-            setUserRole(userData.role);
-            setIsAuthenticated(true);
-          } else {
-            setIsAuthenticated(false);
-          }
-        } catch (error) {
-          console.error("Error al obtener los datos del usuario:", error);
+        // Obtener los datos del usuario desde Firestore
+        const userDocRef = doc(db, "Users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUserRole(userData.role);
+          setIsAuthenticated(true);
+        } else {
           setIsAuthenticated(false);
         }
       } else {
         setIsAuthenticated(false);
       }
-      
-      setLoading(false);  // Al terminar la carga, cambia el estado
-    });
+      setLoading(false);
+    };
 
-    // Cleanup function para cancelar la suscripción
-    return () => unsubscribe();
-  }, []);
+    fetchRole();
+  }, [currentUser]);  // Agregar currentUser como dependencia para evitar bucles infinitos
 
+  if (loading) {
+    // Mostrar un mensaje de carga si es necesario
+    return <div>Loading...</div>;
+  }
 
   if (!isAuthenticated || (requiredRole && userRole !== requiredRole)) {
     // Si el usuario no está autenticado o no tiene el rol correcto, redirige
     return <Navigate to="/" />;
   }
 
-  // Si el usuario está autenticado y tiene el rol correcto, renderiza los hijos
   return children;
 };
 

@@ -39,20 +39,6 @@ export const Header = ({
 
         {/* Navegación en escritorio */}
         <nav className="hidden md:flex space-x-6">
-          <button
-            onClick={() => navigate("/menu")}
-            className="hover:text-indigo-400 transition-colors"
-          >
-            Menú
-          </button>
-          {isAdmin && (
-            <button
-              onClick={() => navigate("/admin")}
-              className="hover:text-indigo-400 transition-colors"
-            >
-              Administración
-            </button>
-          )}
           {isAuthenticated && (
             <>
               <button
@@ -94,12 +80,6 @@ export const Header = ({
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
             <>
-              <button
-                onClick={handleUserToggle}
-                className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition"
-              >
-                {isAdmin ? "Panel Admin" : "Menú"}
-              </button>
               <button
                 onClick={handleLogout}
                 className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition"
@@ -144,51 +124,50 @@ export const Header = ({
       {/* Menú móvil desplegable */}
       {isMobileMenuOpen && (
         <div className="md:hidden bg-gray-700 text-white py-4">
-          <button
-            onClick={() => navigate("/menu")}
-            className="block px-4 py-2 w-full text-left hover:bg-gray-600"
-          >
-            Menú
-          </button>
-          {isAdmin && (
-            <button
-              onClick={() => navigate("/admin")}
-              className="block px-4 py-2 w-full text-left hover:bg-gray-600"
-            >
-              Administración
-            </button>
-          )}
-          {isAuthenticated && (
+          {isAdmin ? (
+            // Menú para Admin
             <>
+              <button
+                onClick={() => navigate("/admin")}
+                className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+              >
+                Panel Administrativo
+              </button>
+              <button
+                onClick={handleLogout}
+                className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+              >
+                Cerrar Sesión
+              </button>
+            </>
+          ) : (
+            // Menú para usuario normal
+            <>
+              <button
+                onClick={() => navigate("/menu")}
+                className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+              >
+                Menú
+              </button>
               <button
                 onClick={() => navigate("/history")}
                 className="block px-4 py-2 w-full text-left hover:bg-gray-600"
               >
                 Historial de Pedidos
               </button>
-              {/* Texto del carrito en menú móvil */}
               <button
                 onClick={() => navigate("/cart")}
                 className="block px-4 py-2 w-full text-left hover:bg-gray-600"
               >
                 Carrito de Compras
               </button>
+              <button
+                onClick={handleLogout}
+                className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+              >
+                Cerrar Sesión
+              </button>
             </>
-          )}
-          {isAuthenticated ? (
-            <button
-              onClick={handleLogout}
-              className="block px-4 py-2 w-full text-left hover:bg-gray-600"
-            >
-              Cerrar Sesión
-            </button>
-          ) : (
-            <button
-              onClick={() => navigate("/")}
-              className="block px-4 py-2 w-full text-left hover:bg-gray-600"
-            >
-              Iniciar Sesión
-            </button>
           )}
         </div>
       )}
