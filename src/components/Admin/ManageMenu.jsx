@@ -1,207 +1,216 @@
-import React, { useState, useEffect } from "react";
-import { getMenuItems, addMenuItem, deleteMenuItem, updateMenuItem } from "../../services/menuService";
-import { storage } from "../../services/firebaseConfig"; // Ahora se importa 'storage' correctamente
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import React, { useContext, useState, useEffect } from "react";
+import { MenuContext } from "../../contexts/MenuContext";
+import { db } from "../../services/firebaseConfig";
+import { collection, onSnapshot, doc, deleteDoc, addDoc, updateDoc } from "firebase/firestore"; 
 
-const ManageMenu = () => {
-  const [menuItems, setMenuItems] = useState([]);
-  const [newMenuItem, setNewMenuItem] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "entrada", // Categoría por defecto
-    available: true,
-    image: null,
-  });
-  const [editMenuItem, setEditMenuItem] = useState(null); // Estado para el producto que se está editando
+export const ManageMenu = () => {
+  const { items, setItems } = useContext(MenuContext); // Usamos el contexto
+  const [newItem, setNewItem] = useState({ name: "", description: "", price: 0, category: "", image: null });
+  const [editItem, setEditItem] = useState(null); // Para la edición de los productos
+  const [filterCategory, setFilterCategory] = useState("Todas"); // Filtro de categorías
 
-  // Fetch menu items on mount
+  // Cargar los elementos del menú en tiempo real desde Firebase
   useEffect(() => {
-    fetchMenuItems();
-  }, []);
+    const unsubscribe = onSnapshot(collection(db, "menu"), (snapshot) => {
+      const menuItems = snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      setItems(menuItems); // Actualiza los elementos en el contexto en tiempo real
+    });
 
-  const fetchMenuItems = async () => {
-    const items = await getMenuItems();
-    setMenuItems(items);
-  };
+    return () => unsubscribe(); // Limpia la suscripción al desmontar el componente
+  }, [setItems]);
 
-  const handleAddMenuItem = async () => {
-    if (newMenuItem.image) {
-      // Subir la imagen a Firebase Storage
-      const imageRef = ref(storage, `menuImages/${newMenuItem.image.name}`);
-      await uploadBytes(imageRef, newMenuItem.image);
-      const imageUrl = await getDownloadURL(imageRef); // Obtener la URL de la imagen
-
-      const menuItemWithImage = {
-        ...newMenuItem,
-        image: imageUrl,
-      };
-      await addMenuItem(menuItemWithImage);
-    } else {
-      await addMenuItem(newMenuItem);
+  // Agregar un producto al menú y a Firebase
+  const handleAddItem = async () => {
+    if (!newItem.category) {
+      alert("Por favor, selecciona una categoría.");
+      return;
     }
-
-    fetchMenuItems(); // Refresh list
-    setNewMenuItem({ name: "", description: "", price: "", category: "entrada", available: true, image: null });
-  };
-
-  const handleDeleteMenuItem = async (id) => {
-    await deleteMenuItem(id);
-    fetchMenuItems();
-  };
-
-  const handleEditMenuItem = (item) => {
-    setEditMenuItem(item); // Pre-cargar los datos del producto en el formulario de edición
-  };
-
-  const handleSaveEditMenuItem = async () => {
-    if (editMenuItem.image) {
-      const imageRef = ref(storage, `menuImages/${editMenuItem.image.name}`);
-      await uploadBytes(imageRef, editMenuItem.image);
-      const imageUrl = await getDownloadURL(imageRef);
-      await updateMenuItem({ ...editMenuItem, image: imageUrl });
-    } else {
-      await updateMenuItem(editMenuItem);
+    try {
+      const docRef = await addDoc(collection(db, "menu"), {
+        ...newItem,
+        available: true, // Por defecto, disponible
+      });
+      setItems([...items, { ...newItem, id: docRef.id, available: true }]); // Agrega el nuevo producto al estado
+      setNewItem({ name: "", description: "", price: 0, category: "", image: null }); // Reinicia el formulario
+    } catch (error) {
+      console.error("Error al agregar el producto", error);
     }
-    fetchMenuItems(); // Refrescar lista
-    setEditMenuItem(null); // Cerrar el formulario de edición
   };
+
+  // Editar un producto en Firebase y en el estado
+  const handleEditItem = async () => {
+    if (!editItem.category) {
+      alert("Por favor, selecciona una categoría.");
+      return;
+    }
+    try {
+      const itemDoc = doc(db, "menu", editItem.id);
+      await updateDoc(itemDoc, editItem); // Actualiza el producto en Firebase
+      setItems(items.map(item => item.id === editItem.id ? editItem : item)); // Actualiza el estado
+      setEditItem(null); // Cierra el formulario de edición
+    } catch (error) {
+      console.error("Error al editar el producto", error);
+    }
+  };
+
+  // Eliminar un producto de Firebase y del estado
+  const handleDeleteItem = async (id) => {
+    try {
+      const itemDoc = doc(db, "menu", id);
+      await deleteDoc(itemDoc); // Elimina el producto de Firebase
+      setItems(items.filter(item => item.id !== id)); // Elimina el producto del estado
+    } catch (error) {
+      console.error("Error al eliminar el producto", error);
+    }
+  };
+
+  // Cambiar disponibilidad del producto
+  const handleToggleAvailability = async (id, currentAvailability) => {
+    try {
+      const itemDoc = doc(db, "menu", id);
+      await updateDoc(itemDoc, { available: !currentAvailability });
+      setItems(
+        items.map((item) =>
+          item.id === id ? { ...item, available: !currentAvailability } : item
+        )
+      );
+    } catch (error) {
+      console.error("Error al cambiar la disponibilidad del producto", error);
+    }
+  };
+
+  // Filtrar productos por categoría
+  const filteredItems =
+    filterCategory === "Todas"
+      ? items
+      : items.filter((item) => item.category === filterCategory);
 
   return (
     <div className="manage-menu">
       <h2 className="text-xl font-bold mb-4">Gestión de Menú</h2>
 
-      {/* Formulario para Agregar Producto */}
+      {/* Filtro de Categorías */}
+      <div className="mb-4">
+        <select
+          value={filterCategory}
+          onChange={(e) => setFilterCategory(e.target.value)}
+          className="border p-2 mb-4"
+        >
+          <option value="Todas">Todas</option>
+          <option value="Entradas">Entradas</option>
+          <option value="Platos Fuertes">Platos Fuertes</option>
+          <option value="Postres">Postres</option>
+          <option value="Bebidas">Bebidas</option>
+        </select>
+      </div>
+
+      {/* Formulario de Agregar Producto */}
       <div className="mb-4">
         <input
           type="text"
           placeholder="Nombre"
-          value={newMenuItem.name}
-          onChange={(e) => setNewMenuItem({ ...newMenuItem, name: e.target.value })}
+          value={newItem.name}
+          onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
           className="border p-2 mr-2"
         />
         <input
           type="text"
           placeholder="Descripción"
-          value={newMenuItem.description}
-          onChange={(e) => setNewMenuItem({ ...newMenuItem, description: e.target.value })}
+          value={newItem.description}
+          onChange={(e) => setNewItem({ ...newItem, description: e.target.value })}
           className="border p-2 mr-2"
         />
         <input
           type="number"
           placeholder="Precio"
-          value={newMenuItem.price}
-          onChange={(e) => setNewMenuItem({ ...newMenuItem, price: e.target.value })}
+          value={newItem.price}
+          onChange={(e) => setNewItem({ ...newItem, price: parseFloat(e.target.value) })}
           className="border p-2 mr-2"
         />
         <select
-          value={newMenuItem.category}
-          onChange={(e) => setNewMenuItem({ ...newMenuItem, category: e.target.value })}
+          value={newItem.category}
+          onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
           className="border p-2 mr-2"
         >
-          <option value="entrada">Entrada</option>
-          <option value="plato_fuerte">Plato Fuerte</option>
-          <option value="postre">Postre</option>
-          <option value="bebida">Bebida</option>
+          <option value="">Seleccionar Categoría</option>
+          <option value="Entradas">Entradas</option>
+          <option value="Platos Fuertes">Platos Fuertes</option>
+          <option value="Postres">Postres</option>
+          <option value="Bebidas">Bebidas</option>
         </select>
-        <div>
-          <label>
-            <input
-              type="checkbox"
-              checked={newMenuItem.available}
-              onChange={(e) => setNewMenuItem({ ...newMenuItem, available: e.target.checked })}
-              className="mr-2"
-            />
-            Disponible
-          </label>
-        </div>
-        <input
-          type="file"
-          onChange={(e) => setNewMenuItem({ ...newMenuItem, image: e.target.files[0] })}
-          className="border p-2 mr-2"
-        />
-        <button onClick={handleAddMenuItem} className="bg-blue-500 text-white p-2 rounded">
+        <button onClick={handleAddItem} className="bg-blue-500 text-white p-2 rounded">
           Agregar Producto
         </button>
       </div>
 
       {/* Formulario de Edición */}
-      {editMenuItem && (
+      {editItem && (
         <div className="mb-4">
           <h3 className="text-lg font-bold mb-2">Editar Producto</h3>
           <input
             type="text"
-            value={editMenuItem.name}
-            onChange={(e) => setEditMenuItem({ ...editMenuItem, name: e.target.value })}
+            value={editItem.name}
+            onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
             className="border p-2 mr-2"
           />
           <input
             type="text"
-            value={editMenuItem.description}
-            onChange={(e) => setEditMenuItem({ ...editMenuItem, description: e.target.value })}
+            value={editItem.description}
+            onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
             className="border p-2 mr-2"
           />
           <input
             type="number"
-            value={editMenuItem.price}
-            onChange={(e) => setEditMenuItem({ ...editMenuItem, price: e.target.value })}
+            value={editItem.price}
+            onChange={(e) => setEditItem({ ...editItem, price: parseFloat(e.target.value) })}
             className="border p-2 mr-2"
           />
           <select
-            value={editMenuItem.category}
-            onChange={(e) => setEditMenuItem({ ...editMenuItem, category: e.target.value })}
+            value={editItem.category}
+            onChange={(e) => setEditItem({ ...editItem, category: e.target.value })}
             className="border p-2 mr-2"
           >
-            <option value="entrada">Entrada</option>
-            <option value="plato_fuerte">Plato Fuerte</option>
-            <option value="postre">Postre</option>
-            <option value="bebida">Bebida</option>
+            <option value="">Seleccionar Categoría</option>
+            <option value="Entradas">Entradas</option>
+            <option value="Platos Fuertes">Platos Fuertes</option>
+            <option value="Postres">Postres</option>
+            <option value="Bebidas">Bebidas</option>
           </select>
-          <div>
-            <label>
-              <input
-                type="checkbox"
-                checked={editMenuItem.available}
-                onChange={(e) => setEditMenuItem({ ...editMenuItem, available: e.target.checked })}
-                className="mr-2"
-              />
-              Disponible
-            </label>
-          </div>
-          <input
-            type="file"
-            onChange={(e) => setEditMenuItem({ ...editMenuItem, image: e.target.files[0] })}
-            className="border p-2 mr-2"
-          />
-          <button onClick={handleSaveEditMenuItem} className="bg-green-500 text-white p-2 rounded">
+          <button onClick={handleEditItem} className="bg-green-500 text-white p-2 rounded">
             Guardar Cambios
           </button>
         </div>
       )}
 
-      {/* Lista de Productos */}
-      <ul>
-        {menuItems.map((item) => (
-          <li key={item.id} className="flex justify-between items-center border-b py-2">
-            <span>
-              {item.name} - ${item.price} - {item.available ? "Disponible" : "Agotado"}
-              {item.image && <img src={item.image} alt={item.name} className="w-16 h-16 object-cover ml-2" />}
-            </span>
-            <button
-              onClick={() => handleEditMenuItem(item)} // Llamada al formulario de edición
-              className="bg-yellow-500 text-white p-1 rounded"
-            >
-              Editar
-            </button>
-            <button
-              onClick={() => handleDeleteMenuItem(item.id)}
-              className="bg-red-500 text-white p-1 rounded"
-            >
-              Eliminar
-            </button>
-          </li>
-        ))}
-      </ul>
+      {/* Listado de Productos */}
+      <div>
+        {filteredItems && filteredItems.length > 0 ? (
+          filteredItems.map((item) => (
+            <div key={item.id} className={`flex justify-between items-center border-b py-2 ${item.available ? "" : "opacity-50"}`}>
+              <span>{item.name} - {item.category}</span>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleToggleAvailability(item.id, item.available)}
+                  className={`p-1 rounded ${item.available ? "bg-green-500" : "bg-gray-500"} text-white`}
+                >
+                  {item.available ? "Disponible" : "Agotado"}
+                </button>
+                <button onClick={() => setEditItem(item)} className="bg-yellow-500 text-white p-1 rounded">
+                  Editar
+                </button>
+                <button onClick={() => handleDeleteItem(item.id)} className="bg-red-500 text-white p-1 rounded">
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p>No hay productos en esta categoría.</p>
+        )}
+      </div>
     </div>
   );
 };
