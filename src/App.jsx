@@ -14,6 +14,7 @@ import CheckoutPage from "./components/Checkout/CheckoutPage";
 import PaymentSuccess from "./components/Checkout/PaymentSuccess";
 import PaymentFailure from "./components/Checkout/PaymentFailure";
 import OrdersPage from "./components/OrdersPage";
+import TrackingOrder from "./components/TrackingOrder";
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -88,6 +89,15 @@ function App() {
                 element={
                   <ProtectedRoute requiredRole="user">
                     <MenuView />
+                  </ProtectedRoute>
+                }
+              />
+
+              <Route
+                path="/tracking-order"
+                element={
+                  <ProtectedRoute isAuthenticated={isAuthenticated}>
+                    <TrackingOrder userId={user?.id} />
                   </ProtectedRoute>
                 }
               />

@@ -80,12 +80,7 @@ export const Header = ({
         <div className="flex items-center space-x-4">
           {isAuthenticated ? (
             <>
-              <button
-                onClick={handleLogout}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition"
-              >
-                Cerrar Sesión
-              </button>
+              {/* Aquí ya no está el botón rojo de "Cerrar Sesión" fuera del menú de hamburguesa */}
             </>
           ) : (
             <button
@@ -133,6 +128,7 @@ export const Header = ({
               >
                 Panel Administrativo
               </button>
+              {/* El botón de Cerrar Sesión solo estará en el menú de hamburguesa para Admin */}
               <button
                 onClick={handleLogout}
                 className="block px-4 py-2 w-full text-left hover:bg-gray-600"
@@ -161,6 +157,14 @@ export const Header = ({
               >
                 Carrito de Compras
               </button>
+              {/* Aquí añadimos la opción de "Seguimiento de Pedido" solo para usuarios autenticados */}
+              <button
+                onClick={() => navigate("/tracking-order")}
+                className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+              >
+                Seguimiento de Pedido
+              </button>
+              {/* El botón de Cerrar Sesión solo estará en el menú de hamburguesa para usuarios */}
               <button
                 onClick={handleLogout}
                 className="block px-4 py-2 w-full text-left hover:bg-gray-600"
