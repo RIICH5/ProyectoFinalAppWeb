@@ -27,7 +27,7 @@ function App() {
       if (storedUser) {
         setUser(storedUser);
         setIsAuthenticated(true);
-        setIsAdmin(storedUser.role === "admin");
+        setIsAdmin(storedUser.role === "admin"); // Asignar true si el rol es admin
       }
       setIsCheckingAuth(false);
     };
@@ -72,44 +72,50 @@ function App() {
                 element={<RegisterForm />}
               />
 
-              {/* Rutas protegidas */}
+              {/* Rutas protegidas con el rol de admin */}
               <Route
                 path="/admin"
                 element={
-                  <ProtectedRoute isAuthenticated={isAuthenticated && isAdmin}>
+                  <ProtectedRoute requiredRole="admin">
                     <AdminPanel />
                   </ProtectedRoute>
                 }
               />
+
+              {/* Rutas protegidas para usuarios autenticados */}
               <Route
                 path="/menu"
                 element={
-                  <ProtectedRoute isAuthenticated={isAuthenticated}>
+                  <ProtectedRoute requiredRole="user">
                     <MenuView />
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/cart"
                 element={
-                  <ProtectedRoute isAuthenticated={isAuthenticated}>
+                  <ProtectedRoute requiredRole="user">
                     <OrderCart userId={user?.id} />
                   </ProtectedRoute>
                 }
               />
+
               <Route
                 path="/history"
                 element={
-                  <ProtectedRoute isAuthenticated={isAuthenticated}>
+                  <ProtectedRoute requiredRole="user">
                     <OrderHistory userId={user?.id} />
                   </ProtectedRoute>
                 }
               />
 
+              {/* Rutas de checkout */}
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/payment-failure" element={<PaymentFailure />} />
 
+              {/* Ruta de pedidos */}
               <Route path="/orders" element={<OrdersPage />} />
 
               {/* Ruta para redirigir rutas desconocidas */}
