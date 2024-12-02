@@ -41,38 +41,76 @@ export const Header = ({
         <nav className="hidden md:flex space-x-6">
           {isAuthenticated && (
             <>
-              <button
-                onClick={() => navigate("/history")}
-                className="hover:text-indigo-400 transition-colors"
-              >
-                Historial de Pedidos
-              </button>
-              {/* Ícono del carrito en computadoras */}
-              <button
-                onClick={() => navigate("/cart")}
-                className="relative hover:text-indigo-400 transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              {isAdmin ? (
+                // Menú de Admin, no mostrar carrito
+                <button
+                  onClick={() => navigate("/admin")}
+                  className="hover:text-indigo-400 transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.6 8h11.2l-1.6-8M13 9h1m-6 0h1"
-                  />
-                </svg>
-                {cart.length > 0 && (
-                  <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
-                    {cart.length}
-                  </span>
-                )}
-              </button>
+                  Panel Administrativo
+                </button>
+              ) : (
+                // Menú de Usuario normal
+                <>
+                  <button
+                    onClick={() => navigate("/menu")}
+                    className="hover:text-indigo-400 transition-colors"
+                  >
+                    Menú
+                  </button>
+                  <button
+                    onClick={() => navigate("/history")}
+                    className="hover:text-indigo-400 transition-colors"
+                  >
+                    Historial de Pedidos
+                  </button>
+                  <button
+                    onClick={() => navigate("/tracking-order")}
+                    className="hover:text-indigo-400 transition-colors"
+                  >
+                    Seguimiento de Pedido
+                  </button>
+                </>
+              )}
             </>
+          )}
+
+          {/* Solo mostrar carrito si el usuario no es admin */}
+          {!isAdmin && isAuthenticated && (
+            <button
+              onClick={() => navigate("/cart")}
+              className="relative hover:text-indigo-400 transition-colors"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.6 8h11.2l-1.6-8M13 9h1m-6 0h1"
+                />
+              </svg>
+              {cart.length > 0 && (
+                <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full px-1">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* Agregar Cerrar Sesión en la vista de pantalla completa */}
+          {isAuthenticated && (
+            <button
+              onClick={handleLogout}
+              className="hover:text-indigo-400 transition-colors"
+            >
+              Cerrar Sesión
+            </button>
           )}
         </nav>
 
@@ -128,7 +166,6 @@ export const Header = ({
               >
                 Panel Administrativo
               </button>
-              {/* El botón de Cerrar Sesión solo estará en el menú de hamburguesa para Admin */}
               <button
                 onClick={handleLogout}
                 className="block px-4 py-2 w-full text-left hover:bg-gray-600"
@@ -152,19 +189,17 @@ export const Header = ({
                 Historial de Pedidos
               </button>
               <button
-                onClick={() => navigate("/cart")}
-                className="block px-4 py-2 w-full text-left hover:bg-gray-600"
-              >
-                Carrito de Compras
-              </button>
-              {/* Aquí añadimos la opción de "Seguimiento de Pedido" solo para usuarios autenticados */}
-              <button
                 onClick={() => navigate("/tracking-order")}
                 className="block px-4 py-2 w-full text-left hover:bg-gray-600"
               >
                 Seguimiento de Pedido
               </button>
-              {/* El botón de Cerrar Sesión solo estará en el menú de hamburguesa para usuarios */}
+              <button
+                onClick={() => navigate("/cart")}
+                className="block px-4 py-2 w-full text-left hover:bg-gray-600"
+              >
+                Carrito de Compras
+              </button>
               <button
                 onClick={handleLogout}
                 className="block px-4 py-2 w-full text-left hover:bg-gray-600"
