@@ -13,6 +13,7 @@ import { OrderProvider } from "./contexts/OrderContext";
 import CheckoutPage from "./components/Checkout/CheckoutPage";
 import PaymentSuccess from "./components/Checkout/PaymentSuccess";
 import PaymentFailure from "./components/Checkout/PaymentFailure";
+import OrdersPage from "./components/OrdersPage";
 
 function App() {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -108,6 +109,8 @@ function App() {
               <Route path="/checkout" element={<CheckoutPage />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/payment-failure" element={<PaymentFailure />} />
+
+              <Route path="/orders" element={<OrdersPage />} />
 
               {/* Ruta para redirigir rutas desconocidas */}
               <Route path="*" element={<Navigate to="/" />} />

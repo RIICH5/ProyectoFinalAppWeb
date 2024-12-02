@@ -112,7 +112,7 @@ const CheckoutPage = () => {
         items: cart,
         total,
         transactionId, // Agregar el ID de la transacción
-        status: "completed",
+        status: "in_progress",
         createdAt: serverTimestamp(),
       };
 
